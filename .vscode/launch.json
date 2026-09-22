@@ -1,0 +1,49 @@
+{
+  // Run/Debug configurations for the Meeting Transcript Analyzer.
+  //
+  // The app lives in src/, not at the workspace root, so every entry
+  // pins "cwd" to src/ and "python" to the project virtualenv. The cwd
+  // matters beyond imports: pydantic-settings resolves its env_file
+  // relative to the working directory, so src/ is what lets the app
+  // find its own configuration file.
+  //
+  // No secrets appear here. The application reads its configuration
+  // itself; nothing is copied into this file or passed through VS Code.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "FastAPI: run (reload, :8000)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "meeting_analyzer.main:app",
+        "--reload",
+        "--port",
+        "8000"
+      ],
+      "cwd": "${workspaceFolder}/src",
+      "python": "${workspaceFolder}/src/.venv/bin/python",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      // --reload makes uvicorn run the app in a child process; debugpy
+      // has to follow it or nothing in the app is ever debuggable.
+      "subProcess": true
+    },
+    {
+      "name": "FastAPI: debug (no reload, :8000)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "meeting_analyzer.main:app",
+        "--port",
+        "8000"
+      ],
+      "cwd": "${workspaceFolder}/src",
+      "python": "${workspaceFolder}/src/.venv/bin/python",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ]
+}

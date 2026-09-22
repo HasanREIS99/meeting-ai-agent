@@ -51,7 +51,14 @@ htmlcov/
 .tox/
 
 # ── Editor / IDE / tooling state ────────────────────────────────────
-.vscode/
+# Shared run/debug configuration is version-controlled so the whole team
+# gets the same Run button; everything else VS Code drops in here stays
+# local. Note this must be `.vscode/*` and not `.vscode/`: git cannot
+# re-include a file whose parent DIRECTORY is excluded, so the negations
+# below would silently do nothing against a directory pattern.
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
 .idea/
 *.swp
 *.swo

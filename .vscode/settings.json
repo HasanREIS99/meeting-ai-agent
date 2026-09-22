@@ -1,0 +1,5 @@
+{
+  // Point VS Code at the project virtualenv so the interpreter, linting
+  // and the integrated terminal all use it without manual selection.
+  "python.defaultInterpreterPath": "${workspaceFolder}/src/.venv/bin/python"
+}
