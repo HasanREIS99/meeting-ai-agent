@@ -1,0 +1,467 @@
+openapi: 3.0.3
+info:
+  title: Meeting Transcript Analyzer API
+  description: REST API for the meeting transcript analyzer — accepts plain text transcript files and produces structured analysis with topic clusters, summaries, and action items.
+  version: 1.0.0
+  contact:
+    name: adFactory BA Lane
+
+servers:
+  - url: https://api.meeting-ai-agent.local
+    description: Internal API (v1)
+
+paths:
+  /api/v1/analyze:
+    post:
+      summary: Upload transcript and analyze
+      description: Upload a .txt transcript file. The system analyzes it synchronously and returns results including topic clusters, summaries, and action items.
+      operationId: analyzeTranscript
+      tags:
+        - Analysis
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The .txt transcript file to analyze (plain text, UTF-8)
+                metadata:
+                  type: string
+                  description: Optional JSON string with transcript metadata (meeting title, date, participants)
+                  example: '{"title":"Sprint Planning","meeting_date":"2025-09-17","participants":["Alice","Bob"]}'
+      responses:
+        '200':
+          description: Analysis completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranscriptResult'
+              example:
+                meetingTitle: "Sprint Planning Q3"
+                language: "en"
+                topicClusters:
+                  - title: "Sprint Planning"
+                    summary: "Team reviewed Q3 goals and capacity. Discussed resource allocation for new projects."
+                    confidence: 0.92
+                    uncertain: false
+                    keywords: ["planning", "Q3", "capacity"]
+                  - title: "Resource Allocation"
+                    summary: "Discussed current team bandwidth and need for additional developers on Project X."
+                    confidence: 0.85
+                    uncertain: false
+                    keywords: ["resources", "headcount", "Project X"]
+                actionItems:
+                  - description: "Create detailed project timeline for Project X"
+                    assignee: "Alice"
+                    deadline: "2025-09-24"
+                    uncertain: false
+                uncertainFindings:
+                  - type: summary
+                    description: "Summary for action item 'Q3 targets discussion' may be incomplete due to unclear meeting notes"
+                processingTime: 1.42
+                markdownContent: |
+                  # Sprint Planning Q3
+
+                  ## Topic Clusters
+
+                  ### 1. Sprint Planning
+                  Team reviewed Q3 goals and capacity...
+
+                  ### 2. Resource Allocation
+                  Discussed current team bandwidth...
+
+                  ## Action Items
+
+                  | # | Description | Assignee | Deadline |
+                  |---|-------------|----------|----------|
+                  | 1 | Create detailed project timeline | Alice | 2025-09-24 |
+
+                  ## Uncertain Findings
+                  - ⚠ Summary for action item 'Q3 targets discussion' may be incomplete...
+                generatedAt: "2025-09-17T14:30:00Z"
+        '400':
+          description: Bad request — file validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                type: "https://http-statuses.github.io/rfc7231#400"
+                title: "Bad Request"
+                status: 400
+                detail: "File must be a .txt (plain text) file. Received: application/pdf"
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                type: "https://http-statuses.github.io/rfc7235#401"
+                title: "Unauthorized"
+                status: 401
+                detail: "Authentication required. Please log in."
+        '413':
+          description: File too large — transcript exceeds 50 pages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                type: "https://http-statuses.github.io/rfc7231#413"
+                title: "Payload Too Large"
+                status: 413
+                detail: "Transcript exceeds 50 pages. Please split the file and retry."
+        '408':
+          description: Request timeout — processing exceeded time limit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                type: "https://http-statuses.github.io/rfc7231#408"
+                title: "Request Timeout"
+                status: 408
+                detail: "Processing exceeded the time limit. The transcript may be too large."
+        '502':
+          description: Bad gateway — LLM provider unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                type: "https://http-statuses.github.io/rfc7231#502"
+                title: "Bad Gateway"
+                status: 502
+                detail: "The language model provider is currently unavailable. Please retry."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                type: "https://http-statuses.github.io/rfc7231#500"
+                title: "Internal Server Error"
+                status: 500
+                detail: "An unexpected error occurred. Please contact the system administrator."
+
+  /api/v1/validate:
+    post:
+      summary: Validate file before upload
+      description: Pre-check a file to determine if it will be accepted. Returns validation errors without processing.
+      operationId: validateFile
+      tags:
+        - Validation
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The file to validate
+      responses:
+        '200':
+          description: Validation complete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+              example:
+                valid: true
+                errors: []
+        '400':
+          description: File validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+              example:
+                valid: false
+                errors:
+                  - "File must be a .txt (plain text) file. Received: application/pdf"
+                  - "File exceeds maximum size of 50 pages"
+
+  /api/v1/auth/login:
+    post:
+      summary: Authenticate user
+      description: Authenticate a user and establish a session. Implementation TBD (OP-006).
+      operationId: loginUser
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  description: User's login name
+                password:
+                  type: string
+                  format: password
+                  description: User's password
+      responses:
+        '200':
+          description: Authentication successful
+          headers:
+            Set-Cookie:
+              description: Session cookie
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                  message:
+                    type: string
+                  example: "Login successful"
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                type: "https://http-statuses.github.io/rfc7235#401"
+                title: "Unauthorized"
+                status: 401
+                detail: "Invalid username or password"
+
+  /api/v1/auth/logout:
+    post:
+      summary: Invalidate session
+      description: End the current user session.
+      operationId: logoutUser
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Logout successful
+
+  /api/v1/auth/verify:
+    get:
+      summary: Verify authentication
+      description: Check if the current user is authenticated and get their status.
+      operationId: verifyAuth
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User is authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authenticated:
+                    type: boolean
+                  userId:
+                    type: string
+                  role:
+                    type: string
+                    example: "team-member"
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health:
+    get:
+      summary: Health check
+      description: Readiness probe for load balancer / orchestrator.
+      operationId: healthCheck
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  version:
+                    type: string
+                    example: "1.0.0"
+                example:
+                  status: "healthy"
+                  version: "1.0.0"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Configurable auth per OP-006. TBD pending architecture evaluation.
+
+  schemas:
+    TranscriptResult:
+      type: object
+      required:
+        - meetingTitle
+        - language
+        - topicClusters
+        - actionItems
+        - processingTime
+        - markdownContent
+      properties:
+        meetingTitle:
+          type: string
+          description: Auto-generated or user-provided meeting title
+        language:
+          type: string
+          enum: [en, tr, mixed]
+          description: Detected primary language
+        topicClusters:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopicCluster'
+        actionItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActionItem'
+        uncertainFindings:
+          type: array
+          items:
+            $ref: '#/components/schemas/UncertainFinding'
+        processingTime:
+          type: number
+          format: float
+          description: Time taken to process in seconds
+        markdownContent:
+          type: string
+          description: Full Markdown-formatted output
+        generatedAt:
+          type: string
+          format: date-time
+          description: When this analysis was generated
+
+    TopicCluster:
+      type: object
+      required:
+        - title
+        - summary
+      properties:
+        title:
+          type: string
+          description: Topic cluster title
+        summary:
+          type: string
+          description: 1-2 sentence summary
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Confidence score (0-1)
+        uncertain:
+          type: boolean
+          description: True if this finding is flagged as uncertain
+        keywords:
+          type: array
+          items:
+            type: string
+          description: Keywords or tags associated with this topic
+
+    ActionItem:
+      type: object
+      required:
+        - description
+      properties:
+        description:
+          type: string
+          description: The action item description
+        assignee:
+          type: string
+          nullable: true
+          description: Person responsible for the action
+        deadline:
+          type: string
+          format: date
+          nullable: true
+          description: Deadline for the action
+        uncertain:
+          type: boolean
+          description: True if this finding is flagged as uncertain
+
+    UncertainFinding:
+      type: object
+      required:
+        - type
+        - description
+      properties:
+        type:
+          type: string
+          enum: [topic, summary, action_item]
+          description: Type of uncertain finding
+        description:
+          type: string
+          description: Description of what is uncertain
+
+    ErrorResponse:
+      type: object
+      required:
+        - type
+        - title
+        - status
+        - detail
+      properties:
+        type:
+          type: string
+          description: Error type URI
+        title:
+          type: string
+          description: Short error title
+        status:
+          type: integer
+          description: HTTP status code
+        detail:
+          type: string
+          description: Human-readable error message
+        instance:
+          type: string
+          description: Error instance identifier
+
+    ValidationResponse:
+      type: object
+      required:
+        - valid
+        - errors
+      properties:
+        valid:
+          type: boolean
+          description: Whether the file passes validation
+        errors:
+          type: array
+          items:
+            type: string
+          description: List of validation errors

@@ -1,0 +1,66 @@
+# Pytest configuration for meeting_analyzer tests.
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+]
+markers = [
+    "TC_BE_001: Happy path upload and analysis",
+    "TC_BE_002: Reject non-.txt file type",
+    "TC_BE_003: Reject transcript exceeding 50 pages",
+    "TC_BE_004: Reject empty transcript file",
+    "TC_BE_005: Handle LLM provider failure gracefully",
+    "TC_BE_006: Handle LLM provider timeout",
+    "TC_BE_007: Validate file without processing",
+    "TC_BE_008: Validate rejects non-.txt file",
+    "TC_BE_009: Validate rejects file exceeding size limit",
+    "TC_BE_010: Successful authentication",
+    "TC_BE_011: Failed authentication (OAuth not yet configured)",
+    "TC_BE_012: Verify authentication status",
+    "TC_BE_013: Verify authentication when not logged in",
+    "TC_BE_014: Logout invalidates session",
+    "TC_BE_015: Health check",
+    "TC_BE_016: Process 30-page transcript within 2 minutes",
+    "TC_BE_017: Process 50-page transcript within 5 minutes",
+    "TC_BE_018: Handle 5 concurrent uploads",
+    "TC_BE_019: Verify TLS 1.2+ for all endpoints",
+    "TC_BE_020: Transcript content is never logged",
+    "TC_BE_021: LLM provider can be replaced without breaking the API",
+    "TC_BE_022: New output format can be added without changing core",
+    "TC_BE_023: English-only transcript",
+    "TC_BE_024: Turkish-only transcript",
+    "TC_BE_025: Mixed English/Turkish transcript",
+    "TC_FE_001: Upload transcript and view analysis results",
+    "TC_FE_002: Attempt to upload unsupported file type",
+    "TC_FE_003: Attempt to upload transcript exceeding 50 pages",
+    "TC_FE_004: Attempt to upload empty transcript file",
+    "TC_FE_005: View uncertain findings in analysis output",
+    "TC_FE_006: Handle analysis failure in the UI",
+    "TC_FE_007: View action items with assignees and deadlines",
+    "TC_FE_008: View action items with unspecified assignees/deadlines",
+    "TC_FE_009: Validate file type before upload",
+    "TC_FE_010: Validate file size before upload",
+    "TC_FE_011: Login page - successful login flow",
+    "TC_FE_012: Login page - failed login",
+    "TC_FE_013: Access control - unauthorized user",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "RUF"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true

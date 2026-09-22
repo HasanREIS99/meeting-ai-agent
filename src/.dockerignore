@@ -1,0 +1,90 @@
+# Docker build context exclusions.
+#
+# The build context is src/ -- docker-compose uses `context: .` from this
+# directory, and CI runs `cd src && docker build .`. The Dockerfile does
+# `COPY . .`, so anything not excluded here is baked into an image layer
+# and ships wherever that image goes. Without this file the live API key
+# in .env and the whole .venv would be copied in.
+#
+# Paths are relative to the context root. Nested matches need **/.
+
+# ── Secrets & local configuration ───────────────────────────────────
+.env
+.env.*
+**/.env
+**/.env.*
+# Negation must come LAST: .dockerignore is last-match-wins, so a broad
+# pattern placed after this line would silently re-exclude the template.
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*credentials*.json
+*credentials*.yaml
+*credentials*.yml
+*secrets*.json
+*secrets*.yaml
+*secrets*.yml
+.netrc
+
+# ── Virtual environments ────────────────────────────────────────────
+.venv
+.venv/
+venv/
+env/
+ENV/
+**/.venv
+
+# ── Python bytecode & build artifacts ───────────────────────────────
+**/__pycache__
+**/*.py[cod]
+**/*.so
+*.egg
+*.egg-info
+dist/
+build/
+*.whl
+
+# ── Test, coverage & type-check artifacts ───────────────────────────
+# NB: the tests/ sources themselves are deliberately NOT excluded, so
+# the suite can still be run inside the container.
+.pytest_cache
+**/.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+
+# ── VCS & agent tooling ─────────────────────────────────────────────
+# These live at the repository root, one level above the context, so
+# they cannot be reached today. Kept as a guard in case the context is
+# ever widened to the repo root.
+.git
+.git/
+.gitignore
+.gitattributes
+.claude/
+.factory/
+.factory/plans/
+
+# ── IDE / editor ────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS noise ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Not needed at runtime ───────────────────────────────────────────
+README.md
+docker-compose.yml
+.gitlab-ci.yml
+.dockerignore

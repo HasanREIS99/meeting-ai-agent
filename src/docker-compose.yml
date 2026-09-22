@@ -1,0 +1,18 @@
+# Meeting Transcript Analyzer — Docker Compose (local development)
+# Starts the app with hot-reload enabled and environment from .env.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app  # Mount source for hot-reload
+    env_file:
+      - .env
+    environment:
+      - APP_ENV=development
+      - LOG_LEVEL=DEBUG
+    restart: unless-stopped

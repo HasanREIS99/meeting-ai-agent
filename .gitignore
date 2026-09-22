@@ -1,0 +1,77 @@
+# Repository-wide ignores.
+#
+# src/.gitignore covers the application subtree; this file covers the
+# repository root and anything that must never be committed regardless
+# of where it appears.
+
+# ── Secrets & local credentials ─────────────────────────────────────
+# The pattern must live here as well as in src/: a .gitignore only
+# governs its own directory downwards, so src/.gitignore cannot protect
+# the repository root.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*credentials*.json
+*credentials*.yaml
+*credentials*.yml
+*secrets*.json
+*secrets*.yaml
+*secrets*.yml
+.netrc
+
+# ── Virtual environments ────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Python build & bytecode ─────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+
+# ── Test & type-check caches, coverage output ───────────────────────
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+
+# ── Editor / IDE / tooling state ────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+# Claude Code per-machine settings. Currently excluded only by the
+# developer's global ignore file, which a fresh clone does not inherit.
+.claude/settings.local.json
+
+# ── OS noise ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── adFactory generated planning artifacts ──────────────────────────
+# ARCHITECTURE.md is kept; the generated plans are not. This replaces
+# a dead rule in src/.gitignore ('factory/plans/*.md') which lacked the
+# leading dot and, living under src/, could never match .factory/ at
+# the repository root.
+.factory/plans/
+
+# ── Local scratch / transcript samples used for manual testing ──────
+*.local
+scratch/
+tmp/

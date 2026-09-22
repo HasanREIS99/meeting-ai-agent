@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Transcript Analyzer</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <div class="header-top">
+                <div class="header-brand">
+                    <h1>📝 Meeting Transcript Analyzer</h1>
+                    <p class="subtitle">Upload a meeting transcript to get topic clusters, summaries, and action items</p>
+                </div>
+            </div>
+        </header>
+
+        <main class="main">
+            <!-- Step 1: Upload -->
+            <section id="upload-section" class="card">
+                <h2>Upload Transcript</h2>
+                <div class="upload-area" id="drop-zone">
+                    <input type="file" id="file-input" accept=".txt" hidden>
+                    <div class="upload-icon">📄</div>
+                    <p>Drag & drop a .txt file here, or <button type="button" id="browse-btn" class="btn-link">browse</button></p>
+                    <p class="upload-hint">Plain text transcripts only. Max 50 pages.</p>
+                </div>
+
+                <div id="file-info" class="file-info hidden">
+                    <span id="file-name"></span>
+                    <span id="file-size" class="file-size"></span>
+                    <button type="button" id="validate-btn" class="btn btn-primary">Validate & Upload</button>
+                    <button type="button" id="remove-file" class="btn btn-secondary">Remove</button>
+                </div>
+
+                <div id="validation-result" class="message hidden"></div>
+            </section>
+
+            <!-- Step 2: Processing -->
+            <section id="processing-section" class="card hidden">
+                <h2>Processing</h2>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" id="progress-fill"></div>
+                </div>
+                <p id="status-text" class="status-text">Analyzing transcript...</p>
+                <div class="spinner"></div>
+            </section>
+
+            <!-- Step 3: Results -->
+            <section id="results-section" class="card hidden">
+                <div class="results-header">
+                    <h2>Analysis Results</h2>
+                    <div class="results-actions">
+                        <button type="button" id="copy-btn" class="btn btn-secondary">📋 Copy</button>
+                        <button type="button" id="download-btn" class="btn btn-secondary">⬇ Download</button>
+                        <button type="button" id="new-analysis-btn" class="btn btn-primary">📝 New Analysis</button>
+                    </div>
+                </div>
+                <div id="markdown-output" class="markdown-output"></div>
+            </section>
+
+            <!-- Error -->
+            <section id="error-section" class="card hidden">
+                <h2>Error</h2>
+                <div id="error-message" class="message message-error"></div>
+                <button type="button" id="retry-btn" class="btn btn-primary">Retry</button>
+                <button type="button" id="new-analysis-error" class="btn btn-secondary">New Analysis</button>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>Meeting Transcript Analyzer v1.0</p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
